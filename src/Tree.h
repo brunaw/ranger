@@ -41,7 +41,7 @@ public:
       bool sample_with_replacement, bool memory_saving_splitting, SplitRule splitrule,
       std::vector<double>* case_weights, std::vector<size_t>* manual_inbag, bool keep_inbag,
       std::vector<double>* sample_fraction, double alpha, double minprop, bool holdout, uint num_random_splits,
-      uint max_depth);
+      uint max_depth, std::vector<double> coef_reg);
 
   virtual void allocateMemory() = 0;
 
@@ -79,7 +79,7 @@ protected:
   void createPossibleSplitVarSubset(std::vector<size_t>& result);
 
   bool splitNode(size_t nodeID);
-  virtual bool splitNodeInternal(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
+  virtual bool splitNodeInternal(size_t nodeID, std::vector<size_t>& possible_split_varIDs, std::vector<double> coef_reg) = 0;
 
   void createEmptyNode();
   virtual void createEmptyNodeInternal() = 0;
@@ -177,6 +177,7 @@ protected:
   uint num_random_splits;
   uint max_depth;
   uint depth;
+  std::vector<double> coef_reg;
   size_t last_left_nodeID;
 };
 

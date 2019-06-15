@@ -70,7 +70,7 @@ void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode
     std::string status_variable_name, bool sample_with_replacement,
     const std::vector<std::string>& unordered_variable_names, bool memory_saving_splitting, SplitRule splitrule,
     std::string case_weights_file, bool predict_all, double sample_fraction, double alpha, double minprop, bool holdout,
-    PredictionType prediction_type, uint num_random_splits, uint max_depth) {
+    PredictionType prediction_type, uint num_random_splits, uint max_depth, std::vector<double> coef_reg) {
 
   this->verbose_out = verbose_out;
 
@@ -88,7 +88,7 @@ void Forest::initCpp(std::string dependent_variable_name, MemoryMode memory_mode
       output_prefix, num_trees, seed, num_threads, importance_mode, min_node_size, status_variable_name,
       prediction_mode, sample_with_replacement, unordered_variable_names, memory_saving_splitting, splitrule,
       predict_all, sample_fraction_vector, alpha, minprop, holdout, prediction_type, num_random_splits, false,
-      max_depth);
+      max_depth, coef_reg);
 
   if (prediction_mode) {
     loadFromFile(load_forest_filename);
@@ -146,7 +146,10 @@ void Forest::initR(std::string dependent_variable_name, std::unique_ptr<Data> in
     const std::vector<std::string>& unordered_variable_names, bool memory_saving_splitting, SplitRule splitrule,
     std::vector<double>& case_weights, std::vector<std::vector<size_t>>& manual_inbag, bool predict_all,
     bool keep_inbag, std::vector<double>& sample_fraction, double alpha, double minprop, bool holdout,
-    PredictionType prediction_type, uint num_random_splits, bool order_snps, uint max_depth) {
+    PredictionType prediction_type, uint num_random_splits, bool order_snps, uint max_depth,
+    std::vector<double> coef_reg) {
+  
+  std::cout << "initR: " << coef_reg[0] << std::endl;
 
   this->verbose_out = verbose_out;
 
@@ -154,7 +157,7 @@ void Forest::initR(std::string dependent_variable_name, std::unique_ptr<Data> in
   init(dependent_variable_name, MEM_DOUBLE, std::move(input_data), mtry, "", num_trees, seed, num_threads,
       importance_mode, min_node_size, status_variable_name, prediction_mode, sample_with_replacement,
       unordered_variable_names, memory_saving_splitting, splitrule, predict_all, sample_fraction, alpha, minprop,
-      holdout, prediction_type, num_random_splits, order_snps, max_depth);
+      holdout, prediction_type, num_random_splits, order_snps, max_depth, coef_reg);
 
   // Set variables to be always considered for splitting
   if (!always_split_variable_names.empty()) {
@@ -188,8 +191,11 @@ void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, s
     uint min_node_size, std::string status_variable_name, bool prediction_mode, bool sample_with_replacement,
     const std::vector<std::string>& unordered_variable_names, bool memory_saving_splitting, SplitRule splitrule,
     bool predict_all, std::vector<double>& sample_fraction, double alpha, double minprop, bool holdout,
-    PredictionType prediction_type, uint num_random_splits, bool order_snps, uint max_depth) {
+    PredictionType prediction_type, uint num_random_splits, bool order_snps, uint max_depth,
+    std::vector<double> coef_reg) {
 
+  std::cout << "init: " << coef_reg[0] << std::endl;
+  
   // Initialize data with memmode
   this->data = std::move(input_data);
 
@@ -232,6 +238,7 @@ void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, s
   this->prediction_type = prediction_type;
   this->num_random_splits = num_random_splits;
   this->max_depth = max_depth;
+  this->coef_reg = coef_reg;
 
   // Set number of samples and variables
   num_samples = data->getNumRows();
@@ -418,6 +425,8 @@ void Forest::saveToFile() {
 
 void Forest::grow() {
 
+  std::cout << "Grow: " << coef_reg[0] << std::endl;
+  
   // Create thread ranges
   equalSplit(thread_ranges, 0, num_trees - 1, num_threads);
 
@@ -453,7 +462,7 @@ void Forest::grow() {
     trees[i]->init(data.get(), mtry, dependent_varID, num_samples, tree_seed, &deterministic_varIDs,
         &split_select_varIDs, tree_split_select_weights, importance_mode, min_node_size, sample_with_replacement,
         memory_saving_splitting, splitrule, &case_weights, tree_manual_inbag, keep_inbag, &sample_fraction, alpha,
-        minprop, holdout, num_random_splits, max_depth);
+        minprop, holdout, num_random_splits, max_depth, coef_reg);
   }
 
 // Init variable importance
@@ -620,7 +629,7 @@ void Forest::computePermutationImportance() {
   clock_t start_time = clock();
   clock_t lap_time = clock();
 
-// Initailize importance and variance
+// Initialize importance and variance
   variable_importance.resize(num_independent_variables, 0);
   std::vector<double> variance;
   if (importance_mode == IMP_PERM_BREIMAN || importance_mode == IMP_PERM_LIAW) {
@@ -643,7 +652,7 @@ void Forest::computePermutationImportance() {
   std::vector<std::thread> threads;
   threads.reserve(num_threads);
 
-// Initailize importance and variance
+// Initialize importance and variance
   std::vector<std::vector<double>> variable_importance_threads(num_threads);
   std::vector<std::vector<double>> variance_threads(num_threads);
 

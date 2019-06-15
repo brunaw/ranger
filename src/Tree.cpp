@@ -40,7 +40,9 @@ void Tree::init(const Data* data, uint mtry, size_t dependent_varID, size_t num_
     std::vector<double>* split_select_weights, ImportanceMode importance_mode, uint min_node_size,
     bool sample_with_replacement, bool memory_saving_splitting, SplitRule splitrule, std::vector<double>* case_weights,
     std::vector<size_t>* manual_inbag, bool keep_inbag, std::vector<double>* sample_fraction, double alpha,
-    double minprop, bool holdout, uint num_random_splits, uint max_depth) {
+    double minprop, bool holdout, uint num_random_splits, uint max_depth, std::vector<double> coef_reg) {
+  
+  std::cout << "Tree Init: " << coef_reg[0] << std::endl;
 
   this->data = data;
   this->mtry = mtry;
@@ -72,6 +74,7 @@ void Tree::init(const Data* data, uint mtry, size_t dependent_varID, size_t num_
   this->minprop = minprop;
   this->num_random_splits = num_random_splits;
   this->max_depth = max_depth;
+  this->coef_reg = coef_reg;
 }
 
 void Tree::grow(std::vector<double>* variable_importance) {
@@ -276,9 +279,11 @@ bool Tree::splitNode(size_t nodeID) {
   // Select random subset of variables to possibly split at
   std::vector<size_t> possible_split_varIDs;
   createPossibleSplitVarSubset(possible_split_varIDs);
+  
+  std::cout << "splitNode: " << coef_reg[0] << std::endl;
 
   // Call subclass method, sets split_varIDs and split_values
-  bool stop = splitNodeInternal(nodeID, possible_split_varIDs);
+  bool stop = splitNodeInternal(nodeID, possible_split_varIDs, coef_reg);
   if (stop) {
     // Terminal node
     return true;

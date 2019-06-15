@@ -212,7 +212,8 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
                    num.threads = NULL, save.memory = FALSE,
                    verbose = TRUE, seed = NULL, 
                    dependent.variable.name = NULL, status.variable.name = NULL, 
-                   classification = NULL) {
+                   classification = NULL, 
+                   coef_reg = NULL) {
   
   ## GenABEL GWA data
   if ("gwaa.data" %in% class(data)) {
@@ -228,6 +229,25 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
     snp.data <- as.matrix(0)
     gwa.mode <- FALSE
   }
+  
+  # Checkings on the regularization coefficients, when used 
+  p <- length(labels(terms(formula, data = data)))
+  if(is.null(coef_reg)){coef_reg = rep(1, p)}
+  
+  if(!is.null(coef_reg)){
+    if (max(coef_reg) > 1){
+      stop("The regularization coefficients can not be greater than 1.")
+    }
+    if (max(coef_reg) <= 0){
+      stop("The regularization coefficients can not be smaller than 0.")
+    }
+    if (length(coef_reg)!= 1 && length(coef_reg)!= p){
+      stop("You must use 1 or p (the number of predictor variables) 
+      regularization coefficients.")
+    }
+    if (length(coef_reg) == 1){coef_reg = rep(coef_reg, p)}	
+  }
+  
   
   ## Sparse matrix data
   if (inherits(data, "Matrix")) {
@@ -757,7 +777,7 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
                       save.memory, splitrule.num, case.weights, use.case.weights, class.weights, 
                       predict.all, keep.inbag, sample.fraction, alpha, minprop, holdout, prediction.type, 
                       num.random.splits, sparse.data, use.sparse.data, order.snps, oob.error, max.depth, 
-                      inbag, use.inbag)
+                      inbag, use.inbag, coef_reg)
   
   if (length(result) == 0) {
     stop("User interrupt or internal error.")

@@ -57,8 +57,10 @@ void TreeRegression::appendToFileInternal(std::ofstream& file) { // #nocov start
 // Empty on purpose
 } // #nocov end
 
-bool TreeRegression::splitNodeInternal(size_t nodeID, std::vector<size_t>& possible_split_varIDs) {
+bool TreeRegression::splitNodeInternal(size_t nodeID, std::vector<size_t>& possible_split_varIDs, std::vector<double> coef_reg) {
 
+  std::cout << "spliNodeInternal Regression: " << coef_reg[0] << std::endl;
+  
   size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
 
   // Stop if maximum node size or depth reached
@@ -127,6 +129,8 @@ bool TreeRegression::findBestSplit(size_t nodeID, std::vector<size_t>& possible_
   double best_decrease = -1;
   size_t best_varID = 0;
   double best_value = 0;
+  
+  std::cout << "findBestSplit: " << coef_reg[0] << std::endl;
 
   // Compute sum of responses in node
   double sum_node = 0;
@@ -137,6 +141,8 @@ bool TreeRegression::findBestSplit(size_t nodeID, std::vector<size_t>& possible_
 
   // For all possible split variables
   for (auto& varID : possible_split_varIDs) {
+    
+    std::cout << "varID: " << varID << "- coef_reg: " << coef_reg[varID -1] << std::endl;
 
     // Find best split value, if ordered consider all values as split values, else all 2-partitions
     if (data->isOrderedVariable(varID)) {
@@ -176,6 +182,8 @@ bool TreeRegression::findBestSplit(size_t nodeID, std::vector<size_t>& possible_
 
 void TreeRegression::findBestSplitValueSmallQ(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
     double& best_value, size_t& best_varID, double& best_decrease) {
+  
+  std::cout << "findBestSplitValueSmallQ (1): " << coef_reg[0] << std::endl;
 
   // Create possible split values
   std::vector<double> possible_split_values;
@@ -204,6 +212,9 @@ void TreeRegression::findBestSplitValueSmallQ(size_t nodeID, size_t varID, doubl
 void TreeRegression::findBestSplitValueSmallQ(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
     double& best_value, size_t& best_varID, double& best_decrease, std::vector<double> possible_split_values,
     std::vector<double>& sums_right, std::vector<size_t>& n_right) {
+  
+  std::cout << "findBestSplitValueSmallQ (2): " << coef_reg[0] << std::endl;
+  
   // -1 because no split possible at largest value
   const size_t num_splits = possible_split_values.size() - 1;
 
@@ -254,6 +265,8 @@ void TreeRegression::findBestSplitValueSmallQ(size_t nodeID, size_t varID, doubl
 void TreeRegression::findBestSplitValueLargeQ(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
     double& best_value, size_t& best_varID, double& best_decrease) {
 
+  //std::cout << "findBestSplitValueLargeQ: " << coef_reg[0] << std::endl;
+  
   // Set counters to 0
   size_t num_unique = data->getNumUniqueDataValues(varID);
   std::fill_n(counter.begin(), num_unique, 0);
@@ -288,7 +301,9 @@ void TreeRegression::findBestSplitValueLargeQ(size_t nodeID, size_t varID, doubl
     }
 
     double sum_right = sum_node - sum_left;
-    double decrease = sum_left * sum_left / (double) n_left + sum_right * sum_right / (double) n_right;
+    double decrease = ((sum_left * sum_left / (double) n_left + 
+                       sum_right * sum_right / (double) n_right) - sum_node * sum_node/num_samples_node) * coef_reg[varID-1];
+    //double decrease = sum_left * sum_left / (double) n_left + sum_right * sum_right / (double) n_right;
 
     // If better than before, use this
     if (decrease > best_decrease) {
@@ -302,6 +317,7 @@ void TreeRegression::findBestSplitValueLargeQ(size_t nodeID, size_t varID, doubl
       best_value = (data->getUniqueDataValue(varID, i) + data->getUniqueDataValue(varID, j)) / 2;
       best_varID = varID;
       best_decrease = decrease;
+      std::cout << "best_decrease: " << best_decrease << std::endl;
 
       // Use smaller value if average is numerically the same as the larger value
       if (best_value == data->getUniqueDataValue(varID, j)) {
@@ -314,6 +330,8 @@ void TreeRegression::findBestSplitValueLargeQ(size_t nodeID, size_t varID, doubl
 void TreeRegression::findBestSplitValueUnordered(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
     double& best_value, size_t& best_varID, double& best_decrease) {
 
+  std::cout << "findBestSplitValueUnordered: " << coef_reg[0] << std::endl;
+  
 // Create possible split values
   std::vector<double> factor_levels;
   data->getAllValues(factor_levels, sampleIDs, varID, start_pos[nodeID], end_pos[nodeID]);
@@ -701,7 +719,8 @@ void TreeRegression::addImpurityImportance(size_t nodeID, size_t varID, double d
       size_t sampleID = sampleIDs[pos];
       sum_node += data->get(sampleID, dependent_varID);
     }
-    best_decrease = decrease - sum_node * sum_node / (double) num_samples_node;
+    best_decrease = decrease; 
+    //best_decrease = decrease - sum_node * sum_node / (double) num_samples_node;
   }
 
   // No variable importance for no split variables
