@@ -299,6 +299,9 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
   max.depth <- 0
   inbag <- list(c(0,0))
   use.inbag <- FALSE
+  coef_reg <- rep(1, ncol(data) - 1)
+  use_depth <- 0
+
   
   ## Use sparse matrix
   if ("dgCMatrix" %in% class(data.final)) {
@@ -316,11 +319,13 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
                       min.node.size, split.select.weights, use.split.select.weights,
                       always.split.variables, use.always.split.variables,
                       status.variable.name, prediction.mode, forest, snp.data, replace, probability,
-                      unordered.factor.variables, use.unordered.factor.variables, save.memory, splitrule,
+                      unordered.factor.variables, use.unordered.factor.variables, 
+                      save.memory, splitrule,
                       case.weights, use.case.weights, class.weights, 
                       predict.all, keep.inbag, sample.fraction, alpha, minprop, holdout, 
                       prediction.type, num.random.splits, sparse.data, use.sparse.data,
-                      order.snps, oob.error, max.depth, inbag, use.inbag)
+                      order.snps, oob.error, max.depth, inbag, use.inbag,
+                      coef_reg, use_depth)
 
   if (length(result) == 0) {
     stop("User interrupt or internal error.")

@@ -213,7 +213,7 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
                    verbose = TRUE, seed = NULL, 
                    dependent.variable.name = NULL, status.variable.name = NULL, 
                    classification = NULL, 
-                   coef_reg = NULL) {
+                   coef_reg = NULL, use_depth = 0) {
   
   ## GenABEL GWA data
   if ("gwaa.data" %in% class(data)) {
@@ -777,7 +777,7 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
                       save.memory, splitrule.num, case.weights, use.case.weights, class.weights, 
                       predict.all, keep.inbag, sample.fraction, alpha, minprop, holdout, prediction.type, 
                       num.random.splits, sparse.data, use.sparse.data, order.snps, oob.error, max.depth, 
-                      inbag, use.inbag, coef_reg)
+                      inbag, use.inbag, coef_reg, use_depth)
   
   if (length(result) == 0) {
     stop("User interrupt or internal error.")
