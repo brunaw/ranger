@@ -81,7 +81,8 @@ private:
   void findBestSplitValueExtraTreesUnordered(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
       double& best_value, size_t& best_varID, double& best_decrease);
 
-  void addImpurityImportance(size_t nodeID, size_t varID, double decrease);
+  void addImpurityImportance(size_t nodeID, size_t varID, 
+                             double decrease,  uint use_depth);
 
   double computePredictionMSE();
 

@@ -184,7 +184,7 @@ bool TreeRegression::findBestSplit(size_t nodeID, std::vector<size_t>& possible_
 
 // Compute decrease of impurity for this node and add to variable importance if needed
   if (importance_mode == IMP_GINI || importance_mode == IMP_GINI_CORRECTED) {
-    addImpurityImportance(nodeID, best_varID, best_decrease);
+    addImpurityImportance(nodeID, best_varID, best_decrease, depth);
   }
   return false;
 }
@@ -420,7 +420,8 @@ void TreeRegression::findBestSplitValueUnordered(size_t nodeID, size_t varID, do
   }
 }
 
-bool TreeRegression::findBestSplitMaxstat(size_t nodeID, std::vector<size_t>& possible_split_varIDs) {
+bool TreeRegression::findBestSplitMaxstat(size_t nodeID, 
+                                          std::vector<size_t>& possible_split_varIDs) {
 
   size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
 
@@ -516,7 +517,7 @@ bool TreeRegression::findBestSplitMaxstat(size_t nodeID, std::vector<size_t>& po
 
     // Compute decrease of impurity for this node and add to variable importance if needed
     if (importance_mode == IMP_GINI || importance_mode == IMP_GINI_CORRECTED) {
-      addImpurityImportance(nodeID, best_varID, best_maxstat);
+      addImpurityImportance(nodeID, best_varID, best_maxstat, use_depth);
     }
 
     return false;
@@ -560,7 +561,7 @@ bool TreeRegression::findBestSplitExtraTrees(size_t nodeID, std::vector<size_t>&
 
   // Compute decrease of impurity for this node and add to variable importance if needed
   if (importance_mode == IMP_GINI || importance_mode == IMP_GINI_CORRECTED) {
-    addImpurityImportance(nodeID, best_varID, best_decrease);
+    addImpurityImportance(nodeID, best_varID, best_decrease, use_depth);
   }
   return false;
 }
@@ -736,7 +737,8 @@ void TreeRegression::findBestSplitValueExtraTreesUnordered(size_t nodeID, size_t
   }
 }
 
-void TreeRegression::addImpurityImportance(size_t nodeID, size_t varID, double decrease) {
+void TreeRegression::addImpurityImportance(size_t nodeID, size_t varID, 
+                                           double decrease,  uint use_depth) {
 
   size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
 
@@ -747,10 +749,14 @@ void TreeRegression::addImpurityImportance(size_t nodeID, size_t varID, double d
       size_t sampleID = sampleIDs[pos];
       sum_node += data->get(sampleID, dependent_varID);
     }
-    //best_decrease = decrease; 
-    best_decrease = decrease - ((sum_node * sum_node / (double) num_samples_node) * coef_reg[varID-1]);
+    if(use_depth == 1){  
+      decrease = decrease - ((sum_node * sum_node / (double) num_samples_node) * std::pow(coef_reg[varID-1], depth));
+    } else {
+      best_decrease = decrease - ((sum_node * sum_node / (double) num_samples_node) * coef_reg[varID-1]);
+    }
   }
 
+  std::cout << "check depth: " << depth << std::endl;
   // No variable importance for no split variables
   size_t tempvarID = data->getUnpermutedVarID(varID);
   for (auto& skip : data->getNoSplitVariables()) {
