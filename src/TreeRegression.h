@@ -56,16 +56,21 @@ private:
 
   // Called by splitNodeInternal(). Sets split_varIDs and split_values.
   bool findBestSplit(size_t nodeID, std::vector<size_t>& possible_split_varIDs, 
-                     int depth);
+                     int depth, 
+                     uint use_depth);
   void findBestSplitValueSmallQ(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
+                                int depth, 
+                                uint use_depth,
       double& best_value, size_t& best_varID, double& best_decrease);
   void findBestSplitValueSmallQ(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
+      int depth, 
+      uint use_depth,
       double& best_value, size_t& best_varID, double& best_decrease, std::vector<double> possible_split_values,
       std::vector<double>& sums_right, std::vector<size_t>& n_right);
   void findBestSplitValueLargeQ(size_t nodeID, size_t varID, double sum_node, 
                                 size_t num_samples_node,
-                                std::vector<size_t> split_varIDs, 
                                 int depth, 
+                                uint use_depth,
       double& best_value, size_t& best_varID, double& best_decrease);
   void findBestSplitValueUnordered(size_t nodeID, size_t varID, double sum_node, size_t num_samples_node,
       double& best_value, size_t& best_varID, double& best_decrease);
@@ -82,7 +87,9 @@ private:
       double& best_value, size_t& best_varID, double& best_decrease);
 
   void addImpurityImportance(size_t nodeID, size_t varID, 
-                             double decrease,  uint use_depth);
+                             double decrease,  uint use_depth,
+                             std::vector<double> coef_reg,
+                             int depth);
 
   double computePredictionMSE();
 

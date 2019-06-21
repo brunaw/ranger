@@ -27,7 +27,8 @@ public:
   Tree();
 
   // Create from loaded forest
-  Tree(std::vector<std::vector<size_t>>& child_nodeIDs, std::vector<size_t>& split_varIDs,
+  Tree(std::vector<std::vector<size_t>>& child_nodeIDs, 
+       std::vector<size_t>& split_varIDs,
       std::vector<double>& split_values);
 
   virtual ~Tree() = default;

@@ -244,6 +244,9 @@ protected:
 
   // Variable importance for all variables in forest
   std::vector<double> variable_importance;
+  
+  // Vars used in forest
+  std::vector<size_t> vars_already_used;
 
   // Computation progress (finished trees)
   size_t progress;

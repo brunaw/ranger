@@ -22,7 +22,8 @@ namespace ranger {
 
 void ForestRegression::loadForest(size_t dependent_varID, size_t num_trees,
     std::vector<std::vector<std::vector<size_t>> >& forest_child_nodeIDs,
-    std::vector<std::vector<size_t>>& forest_split_varIDs, std::vector<std::vector<double>>& forest_split_values,
+    std::vector<std::vector<size_t>>& forest_split_varIDs, 
+    std::vector<std::vector<double>>& forest_split_values,
     std::vector<bool>& is_ordered_variable) {
 
   this->dependent_varID = dependent_varID;
@@ -34,6 +35,9 @@ void ForestRegression::loadForest(size_t dependent_varID, size_t num_trees,
   for (size_t i = 0; i < num_trees; ++i) {
     trees.push_back(
         make_unique<TreeRegression>(forest_child_nodeIDs[i], forest_split_varIDs[i], forest_split_values[i]));
+    
+        //std::cout << "lenght of vector is  " << forest_split_varIDs[i].size() << std::endl; 
+  
   }
 
   // Create thread ranges
@@ -216,6 +220,8 @@ void ForestRegression::loadFromFileInternal(std::ifstream& infile) {
     throw std::runtime_error("Wrong treetype. Loaded file is not a regression forest.");
   }
 
+  
+  
   for (size_t i = 0; i < num_trees; ++i) {
 
     // Read data
@@ -225,6 +231,7 @@ void ForestRegression::loadFromFileInternal(std::ifstream& infile) {
     readVector1D(split_varIDs, infile);
     std::vector<double> split_values;
     readVector1D(split_values, infile);
+    
 
     // If dependent variable not in test data, change variable IDs accordingly
     if (num_variables_saved > num_variables) {

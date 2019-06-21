@@ -150,7 +150,7 @@ void Forest::initR(std::string dependent_variable_name, std::unique_ptr<Data> in
     PredictionType prediction_type, uint num_random_splits, bool order_snps, uint max_depth,
     std::vector<double> coef_reg, uint use_depth) {
   
-  std::cout << "initR: " << coef_reg[0] << std::endl;
+  //std::cout << "initR: " << coef_reg[0] << std::endl;
 
   this->verbose_out = verbose_out;
 
@@ -427,8 +427,6 @@ void Forest::saveToFile() {
 // #nocov end
 
 void Forest::grow() {
-
-  std::cout << "Grow: " << coef_reg[0] << std::endl;
   
   // Create thread ranges
   equalSplit(thread_ranges, 0, num_trees - 1, num_threads);
@@ -466,10 +464,12 @@ void Forest::grow() {
         &split_select_varIDs, tree_split_select_weights, importance_mode, min_node_size, sample_with_replacement,
         memory_saving_splitting, splitrule, &case_weights, tree_manual_inbag, keep_inbag, &sample_fraction, alpha,
         minprop, holdout, num_random_splits, max_depth, coef_reg, use_depth);
+    
   }
 
 // Init variable importance
   variable_importance.resize(num_independent_variables, 0);
+  //vars_already_used.resize(num_independent_variables, 0);
 
 // Grow trees in multiple threads
 #ifdef OLD_WIN_R_BUILD
@@ -480,6 +480,7 @@ void Forest::grow() {
     trees[i]->grow(&variable_importance);
     progress++;
     showProgress("Growing trees..", start_time, lap_time);
+    
   }
 #else
   progress = 0;
