@@ -36,7 +36,7 @@ void ForestRegression::loadForest(size_t dependent_varID, size_t num_trees,
     trees.push_back(
         make_unique<TreeRegression>(forest_child_nodeIDs[i], forest_split_varIDs[i], forest_split_values[i]));
     
-        //std::cout << "lenght of vector is  " << forest_split_varIDs[i].size() << std::endl; 
+    
   
   }
 

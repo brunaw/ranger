@@ -43,7 +43,6 @@ void Tree::init(const Data* data, uint mtry, size_t dependent_varID, size_t num_
     double minprop, bool holdout, uint num_random_splits, uint max_depth, 
     std::vector<double> coef_reg, uint use_depth) {
   
-  std::cout << "Tree Init: " <<  std::endl;
 
   this->data = data;
   this->mtry = mtry;
@@ -87,7 +86,6 @@ void Tree::grow(std::vector<double>* variable_importance) {
 
   this->variable_importance = variable_importance;
   
-  std::cout << "grow is here" << std::endl;
 
 // Bootstrap, dependent if weighted or not and with or without replacement
   if (!case_weights->empty()) {
@@ -292,7 +290,6 @@ bool Tree::splitNode(size_t nodeID) {
   std::vector<size_t> v(possible_split_varIDs.size(), 0); 
   //vars_already_used = v;  
   
-  //std::cout << "splitNode: " << coef_reg[0] << std::endl;
 
   // Call subclass method, sets split_varIDs and split_values
   bool stop = splitNodeInternal(nodeID, possible_split_varIDs, 

@@ -150,7 +150,6 @@ void Forest::initR(std::string dependent_variable_name, std::unique_ptr<Data> in
     PredictionType prediction_type, uint num_random_splits, bool order_snps, uint max_depth,
     std::vector<double> coef_reg, uint use_depth) {
   
-  //std::cout << "initR: " << coef_reg[0] << std::endl;
 
   this->verbose_out = verbose_out;
 
@@ -196,7 +195,6 @@ void Forest::init(std::string dependent_variable_name, MemoryMode memory_mode, s
     PredictionType prediction_type, uint num_random_splits, bool order_snps, uint max_depth,
     std::vector<double> coef_reg, uint use_depth) {
 
-  //std::cout << "init: " << coef_reg[0] << std::endl;
   
   // Initialize data with memmode
   this->data = std::move(input_data);
