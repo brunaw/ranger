@@ -134,15 +134,12 @@
                                       ) {
    
    
+   
    size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
    double best_decrease = -1;
    size_t best_varID = 0;
    double best_value = 0;
-   uint next_depth; 
-   
 
-   
-   
    // Compute sum of responses in node
    double sum_node = 0;
    for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos) {
@@ -185,21 +182,12 @@
        findBestSplitValueUnordered(nodeID, varID, sum_node, num_samples_node, 
                                    best_value, best_varID, best_decrease);
      }
-    
-      std::cout <<"best decrease was " << best_decrease << std::endl;
-    
-     if((*variable_importance)[best_varID - 1] != NULL && (*variable_importance)[best_varID - 1] > 0){  
-       best_decrease = best_decrease;
-     } else{
-       if(use_depth == 1){  
-         next_depth = depth + 1;
-         best_decrease = best_decrease * std::pow(coef_reg[best_varID-1], next_depth);
-       } else {
-         best_decrease = best_decrease * coef_reg[best_varID-1]; 
-       }
-     }
-     
-     std::cout <<"now is " << best_decrease << std::endl;
+
+        
+        //std::cout <<"current " << current << std::endl;
+        //std::cout <<"best decrease was " << best_decrease << std::endl;
+        //std::cout <<"best decrease was " << best_varID << std::endl;
+       
 
    }
    
@@ -231,8 +219,7 @@
                                                std::vector<double> coef_reg,
                                                int depth,
                                                double& best_value, size_t& best_varID, double& best_decrease) {
-   
-   
+
    
    // Create possible split values
    std::vector<double> possible_split_values;
@@ -277,7 +264,7 @@
                                                std::vector<double> possible_split_values,
                                                std::vector<double>& sums_right, std::vector<size_t>& n_right) {
    
-   
+   int next_depth; 
    // -1 because no split possible at largest value
    const size_t num_splits = possible_split_values.size() - 1;
    
@@ -312,19 +299,18 @@
      double decrease = sum_left * sum_left / (double) n_left + sum_right * sum_right / (double) n_right[i];
      
      
-     // doing regularization 
-     // Was the variable previously used? if not, regularize it
+     if((*variable_importance)[varID - 1] != NULL && (*variable_importance)[varID - 1] > 0){  
+        decrease = decrease;
+     } else{
+        if(use_depth == 1){  
+           next_depth = depth + 1;
+           decrease = decrease * std::pow(coef_reg[varID-1], next_depth);
+        } else {
+           decrease = decrease * coef_reg[varID-1]; 
+        }
+     }
      
-     //if((*variable_importance)[varID - 1] > 0){  
-      // decrease = decrease;
-     //} else{
-      // if(use_depth == 1){  
-      //   decrease = decrease * std::pow(coef_reg[varID-1], depth);
-       //} else {
-         //decrease = decrease * coef_reg[varID-1]; 
-      // }
-     //}
-     
+
 
      // If better than before, use this
      if (decrease > best_decrease) {
@@ -348,7 +334,8 @@
                                                int depth,
                                                double& best_value, size_t& best_varID, double& best_decrease) {
    
-   
+   int next_depth; 
+    
    // Set counters to 0
    size_t num_unique = data->getNumUniqueDataValues(varID);
    std::fill_n(counter.begin(), num_unique, 0);
@@ -385,22 +372,18 @@
      double sum_right = sum_node - sum_left;
      double decrease = (sum_left * sum_left / (double) n_left + sum_right * sum_right / (double) n_right);
      
+     if((*variable_importance)[varID - 1] != NULL && (*variable_importance)[varID - 1] > 0){  
+        decrease = decrease;
+     } else{
+        if(use_depth == 1){  
+           next_depth = depth + 1;
+           decrease = decrease * std::pow(coef_reg[varID-1], next_depth);
+        } else {
+           decrease = decrease * coef_reg[varID-1]; 
+        }
+     }
      
-     // Was the variable previously used? if not, regularize it
-     //if((std::find(split_varIDs.begin(), split_varIDs.end(), varID) != split_varIDs.end()) == 0){
-     
-     //if((*variable_importance)[varID - 1] > 0){
-      // decrease = decrease;
-     //}  else {
-      // if(use_depth == 1){  
-      //   decrease = decrease * std::pow(coef_reg[varID-1], depth);
-       //} else {
-        // decrease = decrease * coef_reg[varID-1]; 
-       //}
-     //} 
-     
-     //std::cout <<"decrease changed " << decrease << "for var " << varID - 1 << std::endl;
-     
+
      // If better than before, use this
      if (decrease > best_decrease) {
        // Find next value in this node
@@ -805,7 +788,7 @@
    }
  }
  
- void TreeRegression::addImpurityImportance(size_t nodeID, size_t varID, 
+ void TreeRegression::addImpurityImportance(size_t nodeID, size_t best_varID, 
                                             double decrease,  
                                             uint use_depth,
                                             std::vector<double> coef_reg,
@@ -816,9 +799,10 @@
    double diff; 
    uint next_depth; 
    next_depth = depth + 1;
+   double best_decrease = decrease; 
    
    
-   double best_decrease = decrease;
+   //double best_decrease = best_decrease;
    if (splitrule != MAXSTAT) {
      double sum_node = 0;
      for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos) {
@@ -828,36 +812,36 @@
      
      
      // if it was used already, don't penalize it 
-     if((*variable_importance)[varID - 1] > 0){
+     if((*variable_importance)[best_varID - 1] > 0){
        diff = (sum_node * sum_node / (double) num_samples_node);
        best_decrease = decrease - diff; 
-       std::cout << "nodep nocoef best decrease was  " << best_decrease << " and the diff was "<< diff <<  std::endl;
+       //best decrease was  " << decrease << " and the diff was "<< diff <<  std::endl;
        
      } else{  
        // bit resulting of the regularization 
        if(use_depth == 1){  
          
-         diff = ((sum_node * sum_node / (double) num_samples_node) * std::pow(coef_reg[varID-1], next_depth));
+         diff = ((sum_node * sum_node / (double) num_samples_node) * std::pow(coef_reg[best_varID-1], next_depth));
          best_decrease = decrease - diff; 
-         std::cout << "dep best decrease was   " << decrease << " and the diff was "<< diff << "with " << std::pow(coef_reg[varID-1], next_depth) << std::endl;
-         std::cout << "decrease now " << best_decrease << std::endl;
+         //std::cout << "dep best decrease was   " << decrease << " and the diff was "<< diff << "with " << std::pow(coef_reg[best_varID-1], next_depth) << std::endl;
+         //std::cout << "decrease now " << best_decrease << std::endl;
        } else {
-         diff = ((sum_node * sum_node / (double) num_samples_node) * coef_reg[varID-1]);
+         diff = ((sum_node * sum_node / (double) num_samples_node) * coef_reg[best_varID-1]);
          best_decrease = decrease - diff; 
-         std::cout << "nodep best decrease was  " <<  best_decrease << "with " << coef_reg[varID-1] << " and the diff was "<< diff << std::endl;
-         std::cout << "decrease now " << best_decrease << std::endl;
+         //std::cout << "nodep best decrease was  " <<  decrease << "with " << coef_reg[best_varID-1] << " and the diff was "<< diff << std::endl;
+         //std::cout << "decrease now " << decrease << std::endl;
        }
      }
      
-     if((*variable_importance)[varID - 1] > 0){
+     if((*variable_importance)[best_varID - 1] > 0){
        //diff = (sum_node * sum_node / (double) num_samples_node);
        best_decrease = best_decrease; 
      } else{  
        // bit resulting of the regularization 
        if(use_depth == 1){  
-         best_decrease = best_decrease * std::pow(coef_reg[varID-1], next_depth);
+         best_decrease = best_decrease * std::pow(coef_reg[best_varID-1], next_depth);
        } else {
-         best_decrease = best_decrease  * coef_reg[varID-1];
+         best_decrease = best_decrease  * coef_reg[best_varID-1];
        }
      }
    
@@ -865,7 +849,7 @@
    }
    
    // No variable importance for no split variables
-   size_t tempvarID = data->getUnpermutedVarID(varID);
+   size_t tempvarID = data->getUnpermutedVarID(best_varID);
    for (auto& skip : data->getNoSplitVariables()) {
      if (tempvarID >= skip) {
        --tempvarID;
@@ -873,7 +857,7 @@
    }
    
    // Subtract if corrected importance and permuted variable, else add
-   if (importance_mode == IMP_GINI_CORRECTED && varID >= data->getNumCols()) {
+   if (importance_mode == IMP_GINI_CORRECTED && best_varID >= data->getNumCols()) {
      (*variable_importance)[tempvarID] -= best_decrease;
    } else {
      (*variable_importance)[tempvarID] += best_decrease;
