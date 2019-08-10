@@ -230,25 +230,6 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
     gwa.mode <- FALSE
   }
   
-  # Checkings on the regularization coefficients, when used 
-  p <- length(labels(terms(formula, data = data)))
-  if(is.null(coef_reg)){coef_reg = rep(1, p)}
-  
-  if(!is.null(coef_reg)){
-    if (max(coef_reg) > 1){
-      stop("The regularization coefficients can not be greater than 1.")
-    }
-    if (max(coef_reg) <= 0){
-      stop("The regularization coefficients can not be smaller than 0.")
-    }
-    if (length(coef_reg)!= 1 && length(coef_reg)!= p){
-      stop("You must use 1 or p (the number of predictor variables) 
-      regularization coefficients.")
-    }
-    if (length(coef_reg) == 1){coef_reg = rep(coef_reg, p)}	
-  }
-  
-  
   ## Sparse matrix data
   if (inherits(data, "Matrix")) {
     if (!("dgCMatrix" %in% class(data))) {
@@ -414,6 +395,26 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
       data.selected[character.idx] <- lapply(data.selected[character.idx], factor)
     }
   }
+  
+  ## Checkings on the regularization coefficients, when used 
+  p <- length(independent.variable.names)
+  if(is.null(coef_reg)){coef_reg = rep(1, p)}
+  
+  if(!is.null(coef_reg)){
+    if (max(coef_reg) > 1){
+      stop("The regularization coefficients can not be greater than 1.")
+    }
+    if (max(coef_reg) <= 0){
+      stop("The regularization coefficients can not be smaller than 0.")
+    }
+    if (length(coef_reg)!= 1 && length(coef_reg)!= p){
+      stop("You must use 1 or p (the number of predictor variables) 
+      regularization coefficients.")
+    }
+    if (length(coef_reg) == 1){coef_reg = rep(coef_reg, p)}	
+  }
+  
+  
   
   ## Input data and variable names, create final data matrix
   if (!is.null(formula) && treetype == 5) {
