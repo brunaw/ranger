@@ -61,8 +61,7 @@
                                         std::vector<double> coef_reg,
                                         uint use_depth
                                           ) {
-
-   
+    
    size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
    
    // Stop if maximum node size or depth reached
@@ -133,8 +132,8 @@
                                     int depth
                                       ) {
    
-   
-   
+
+    
    size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
    double best_decrease = -1;
    size_t best_varID = 0;
@@ -220,7 +219,6 @@
                                                int depth,
                                                double& best_value, size_t& best_varID, double& best_decrease) {
 
-   
    // Create possible split values
    std::vector<double> possible_split_values;
    data->getAllValues(possible_split_values, sampleIDs, varID, start_pos[nodeID], end_pos[nodeID]);
@@ -245,6 +243,7 @@
    } else {
      std::fill_n(sums.begin(), num_splits, 0);
      std::fill_n(counter.begin(), num_splits, 0);
+
      findBestSplitValueSmallQ(nodeID, varID, sum_node, num_samples_node, 
                               use_depth, 
                               coef_reg, 
@@ -297,7 +296,7 @@
      double sum_right = sums_right[i];
      double sum_left = sum_node - sum_right;
      double decrease = sum_left * sum_left / (double) n_left + sum_right * sum_right / (double) n_right[i];
-     
+
      
      if((*variable_importance)[varID - 1] != NULL && (*variable_importance)[varID - 1] > 0){  
         decrease = decrease;
@@ -332,7 +331,9 @@
                                                uint use_depth,
                                                std::vector<double> coef_reg,
                                                int depth,
-                                               double& best_value, size_t& best_varID, double& best_decrease) {
+                                               double& best_value, 
+                                               size_t& best_varID, 
+                                               double& best_decrease) {
    
    int next_depth; 
     
@@ -372,6 +373,7 @@
      double sum_right = sum_node - sum_left;
      double decrease = (sum_left * sum_left / (double) n_left + sum_right * sum_right / (double) n_right);
      
+     
      if((*variable_importance)[varID - 1] != NULL && (*variable_importance)[varID - 1] > 0){  
         decrease = decrease;
      } else{
@@ -383,6 +385,7 @@
         }
      }
      
+     //std::cout << 'decrease now' << decrease << std::endl;
 
      // If better than before, use this
      if (decrease > best_decrease) {

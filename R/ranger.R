@@ -240,7 +240,13 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
       stop("Error: Sparse matrices only supported with alternative interface. Use dependent.variable.name instead of formula.")
     }
   }
-    
+  
+  # Quick fix for non formula interface
+  if(!is.null(dependent.variable.name)){
+    formula = NULL
+    status.variable.name = NULL
+  }
+  
   ## Formula interface. Use whole data frame is no formula provided and depvarname given
   if (is.null(formula)) {
     if (is.null(dependent.variable.name)) {
