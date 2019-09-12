@@ -213,7 +213,7 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
                    verbose = TRUE, seed = NULL, 
                    dependent.variable.name = NULL, status.variable.name = NULL, 
                    classification = NULL, 
-                   coef_reg = NULL, use_depth = 0) {
+                   regularization = NULL) {
   
   ## GenABEL GWA data
   if ("gwaa.data" %in% class(data)) {
@@ -241,7 +241,7 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
     }
   }
   
-  # Quick fix for non formula interface
+  # Quick fix for non-formula interface
   if(!is.null(dependent.variable.name)){
     formula = NULL
     status.variable.name = NULL
@@ -402,10 +402,25 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
     }
   }
   
-  ## Checkings on the regularization coefficients, when used 
   p <- length(independent.variable.names)
-  if(is.null(coef_reg)){coef_reg = rep(1, p)}
   
+  exists('coef_reg', where=regularization)
+  # Checking if regularization objects exist
+  if(!is.null(regularization)){
+    if(exists('coef_reg', where = regularization)){
+      coef_reg <- regularization$coef_reg
+    } else {
+      coef_reg <-  rep(1, p)
+    }
+    if(exists('use_depth', where = regularization)){
+      use_depth <- regularization$use_depth
+    } else {
+      use_depth <-  0
+    }
+  }
+
+  
+  ## Checkings on the regularization coefficients, when used 
   if(!is.null(coef_reg)){
     if (max(coef_reg) > 1){
       stop("The regularization coefficients can not be greater than 1.")
