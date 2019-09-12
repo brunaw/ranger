@@ -403,20 +403,19 @@ ranger <- function(formula = NULL, data = NULL, num.trees = 500, mtry = NULL,
   }
   
   p <- length(independent.variable.names)
-  
-  exists('coef_reg', where=regularization)
+  importance <- "impurity"
+
   # Checking if regularization objects exist
   if(!is.null(regularization)){
-    if(exists('coef_reg', where = regularization)){
+    if("coef_reg" %in% names(regularization)){
       coef_reg <- regularization$coef_reg
-    } else {
-      coef_reg <-  rep(1, p)
-    }
-    if(exists('use_depth', where = regularization)){
+    } 
+    if("use_depth" %in% names(regularization)){
       use_depth <- regularization$use_depth
-    } else {
-      use_depth <-  0
-    }
+    } 
+  } else {
+    coef_reg <-  rep(1, p)
+    use_depth <-  0
   }
 
   
